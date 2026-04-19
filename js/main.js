@@ -181,12 +181,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const btnDoc = new DOMParser().parseFromString(await btnRes.text(), "text/html");
 
       window.tfDarkTemplate = tfDoc.querySelector(".dialog-scene");
-      window.tfWhiteTemplate = tfWhiteDoc.querySelector(".dialog-scene");
+      // 修正白色模板的選擇器，使其能正確載入元件
+      window.tfWhiteTemplate = tfWhiteDoc.querySelector(".mecha-dialogue");
       
-      // 提取白色模板的 CSS 樣式，但不直接注入，而是存起來
-      const whiteStyle = tfWhiteDoc.querySelector("style") ? tfWhiteDoc.querySelector("style").textContent : "";
-      window.tfWhiteStyle = whiteStyle;
-
       const buttonTemplate = btnDoc.querySelector(".mecha-wrapper");
 
       window.createControls = () => {
@@ -242,40 +239,66 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = storyData[currentStep];
     if (!data) return;
     updateBGM();
+    
     dialogueContainer.innerHTML = ""; 
-    
     const isWhite = data.theme === "white" || currentStep === 38;
-    const template = isWhite ? window.tfWhiteTemplate : window.tfDarkTemplate;
     
+    // 切換主題類名，由 style.css 控制細節顯示
+    dialogueContainer.classList.toggle("is-white-theme", isWhite);
+    
+    const template = isWhite ? window.tfWhiteTemplate : window.tfDarkTemplate;
     if (!template) return;
     const scene = template.cloneNode(true);
     
-    // 如果是白色主題，則注入專屬樣式（限縮在容器內）
-    if (isWhite && window.tfWhiteStyle) {
-      const styleTag = document.createElement("style");
-      // 關鍵：修正白色模板的 CSS，讓它不影響 body 背景
-      styleTag.textContent = window.tfWhiteStyle.replace(/body\s*{[^}]*}/g, "").replace(/html\s*{[^}]*}/g, "");
-      dialogueContainer.appendChild(styleTag);
+    if (isWhite) {
+      // 填入白色模板內容 (支援白色模板專用類名)
+      const nameEl = scene.querySelector(".name-tag");
+      const textEl = scene.querySelector(".text-content");
+      if (nameEl) nameEl.textContent = data.title;
+      if (textEl) textEl.innerHTML = data.content.includes("<p>") ? data.content : `<p>${data.content}</p>`;
+
+      // 填入頭像 (白色模板內部補上 img)
+      const avatarContainer = scene.querySelector(".avatar-inner");
+      if (avatarContainer && !avatarContainer.querySelector("img")) {
+        const img = document.createElement("img");
+        img.className = "avatar-panel__image";
+        img.style.width = "100%"; img.style.height = "100%"; img.style.objectFit = "contain";
+        img.src = data.avatar;
+        avatarContainer.appendChild(img);
+      }
+
+      const controls = window.createControls();
+      const controlParent = scene.querySelector(".panel-wrapper");
+      if (controlParent) controlParent.appendChild(controls);
+      
+    } else {
+      // 深色模板填充
+      scene.querySelector(".dialog-shell__title").textContent = data.title;
+      scene.querySelector(".dialog-shell__text").innerHTML = data.content;
+      const avatarImg = scene.querySelector(".avatar-panel__image");
+      if (avatarImg) {
+        avatarImg.src = data.avatar;
+        avatarImg.style.width = "100%"; // 縮小深色模板頭像
+        avatarImg.style.height = "100%";
+        avatarImg.style.margin = "auto";
+      }
+      const controls = window.createControls();
+      scene.querySelector(".dialog-shell").appendChild(controls);
     }
 
-    const controls = window.createControls();
-    scene.querySelector(".dialog-shell").appendChild(controls);
     dialogueContainer.appendChild(scene);
     
-    scene.querySelector(".dialog-shell__title").textContent = data.title;
-    scene.querySelector(".dialog-shell__text").innerHTML = data.content;
-    scene.querySelector(".avatar-panel__image").src = data.avatar;
-    
-    const prevBtn = scene.querySelector(".btn-prev");
-    const nextBtn = scene.querySelector(".btn-next");
-    prevBtn.onclick = () => { if (currentStep > 0) { currentStep--; updateUI(); } };
-    nextBtn.onclick = handleNextAction;
+    const prevBtn = dialogueContainer.querySelector(".btn-prev");
+    const nextBtn = dialogueContainer.querySelector(".btn-next");
+    if (prevBtn) prevBtn.onclick = () => { if (currentStep > 0) { currentStep--; updateUI(); } };
+    if (nextBtn) nextBtn.onclick = handleNextAction;
     
     const nextOnlySteps = [0, 15, 17, 20, 33, 34, 38];
-    prevBtn.classList.toggle("hidden", nextOnlySteps.includes(currentStep));
+    if (prevBtn) prevBtn.classList.toggle("hidden", nextOnlySteps.includes(currentStep));
     
     const isInteracting = (currentStep === 3 && canClearBlame) || (currentStep === 19 && canTurnOffLamp);
-    scene.querySelector(".dialogue-controls").classList.toggle("hidden", isInteracting);
+    const controlsDiv = dialogueContainer.querySelector(".dialogue-controls");
+    if (controlsDiv) controlsDiv.classList.toggle("hidden", isInteracting);
   }
 
   function handleNextAction() {

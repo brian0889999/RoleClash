@@ -139,6 +139,7 @@ body, html {
     width: 100%;
     max-width: 1600px;
     z-index: 100;
+    overflow: visible; /* 確保底部內容不被截斷 */
 }
 
 :root {
@@ -150,103 +151,153 @@ body, html {
   --text-main: #ffffff;
   --btn-light: #d1d1d1;
   --btn-dark: #767676;
+  /* 機甲風格尺寸變數 (1.7倍放大) */
+  --gap-base: 10px;
+  --base-height: 14px;
+  --highlight-line: #989796;
 }
 
-/* --- 對話框基礎結構 --- */
-.dialog-scene {
+/* --- 對話框基礎結構 (使用縮放而非固定高度以防變形) --- */
+.dialog-scene, .mecha-dialogue {
     display: flex;
     align-items: flex-end;
-    gap: 50px;
-    width: 100%;
+    gap: 25px; /* 縮放前原始間距 */
+    width: 60%; /* 縮放前原始寬度 */
+    margin: 0 auto;
+    transform: scale(1.7); /* 透過縮放達到 306px 左右的高度 */
+    transform-origin: bottom center;
+    overflow: visible !important;
 }
 
-.avatar-panel {
-    height: 306px; /* 1.7 倍 */
+.avatar-panel, .avatar-wrapper {
     flex: 0 0 auto;
-    aspect-ratio: 494 / 524;
     position: relative;
     z-index: 110;
+    width: 150px; /* 原始設計寬度 */
+    height: 165px; /* 原始設計高度 (含軌道) */
+    overflow: visible !important;
 }
 
-.avatar-panel::before {
+.avatar-panel::before, .avatar-box {
     content: "";
     position: absolute;
-    inset: 0 0 10px 0;
+    top: 0; left: 0; right: 0;
+    height: 150px;
     background: var(--avatar-outer);
     clip-path: polygon(0% 0%, 82% 0%, 100% 18%, 100% 100%, 14% 100%, 0% 78%);
 }
 
-.avatar-panel__inner {
+.avatar-panel__inner, .avatar-inner {
     position: absolute;
-    inset: 6% 4% 10px 4%;
+    top: 8px; left: 8px; right: 8px;
+    height: 134px;
     background: var(--avatar-inner);
     clip-path: polygon(0% 0%, 84% 0%, 100% 18%, 100% 100%, 18% 100%, 0% 80%);
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    padding: 5%;
+    padding: 0% !important; /* 增加內距以縮小頭像 (原本是 5% 或無) */
 }
 
-.avatar-panel__image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+.avatar-panel__bottom, .avatar-base-rail {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 8px;
+    background: var(--highlight-line);
+    clip-path: polygon(41px 0, 100% 0, 100% 100%, 49px 100%);
 }
 
-.dialog-shell {
+.dialog-shell, .panel-wrapper {
     flex: 1;
     position: relative;
-    height: 306px; /* 1.7 倍 */
+    height: 165px;
     z-index: 100;
+    overflow: visible !important;
 }
 
-.dialog-shell__outer {
+.dialog-shell__outer, .panel-box {
     position: absolute;
-    inset: 0 0 15px 0;
+    top: 0; left: 0; right: 0;
+    height: 150px;
     background: var(--dialog-outer);
     clip-path: polygon(0% 0%, 68% 0%, 70% 4%, 96% 4%, 100% 18%, 100% 100%, 5.5% 100%, 0% 78%);
 }
 
-.dialog-shell__body-panel {
+.dialog-shell__body-panel, .panel-inner {
     position: absolute;
-    inset: 15% 2% 0 2%;
+    top: 0; left: 0; right: 0;
+    height: 150px;
     background: var(--dialog-inner);
     clip-path: polygon(0% 24%, 31.5% 24%, 37% 0%, 94% 0%, 100% 14%, 100% 100%, 0% 100%);
+}
+
+.dialog-shell__footer, .panel-base-rail {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 8px;
+    background: var(--highlight-line);
+    clip-path: polygon(41px 0, 100% 0, 100% 100%, 49px 100%);
+}
+
+/* 白色主題專屬比例 (維持縮放基準) */
+.is-white-theme .mecha-dialogue { padding: 0 !important; }
+.is-white-theme .avatar-inner, .is-white-theme .panel-inner {
+    background: #FFFFFF !important;
+    z-index: 1 !important;
+}
+.is-white-theme .name-tag {
+    position: absolute;
+    top: 5px; left: 45px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    z-index: 100 !important; /* 提高層級確保不被遮擋 */
+    color: #333333 !important; /* 強制深黑色文字 */
+}
+.is-white-theme .text-content {
+    position: relative;
+    padding: 50px 30px 10px 45px !important;
+    font-size: 1rem;
+    z-index: 100 !important; /* 提高層級確保不被遮擋 */
+    color: #333333 !important; /* 強制深黑色文字 */
+}
+/* 確保 p 標籤也繼承顏色 */
+.is-white-theme .text-content p {
+    color: #333333 !important;
+    margin: 0;
 }
 
 .dialog-shell__title {
     position: absolute;
     left: 5%;
-    top: 5%;
+    top: -5%;
     color: var(--text-main);
-    font-size: 1.8rem;
+    font-size: 1.1rem; /* 調降字體 (原本 1.8) */
     z-index: 10;
 }
 
 .dialog-shell__content {
-    padding: 75px 50px 20px 50px;
+    padding: 35px 40px 15px 40px; /* 縮小 Padding (原本 75px ...) */
     color: var(--text-main);
 }
 
 .dialog-shell__text {
-    font-size: 1.7rem;
-    line-height: 1.6;
+    font-size: 1rem; /* 調降字體 (原本 1.7) */
+    line-height: 1.4;
 }
 
 /* --- 按鈕控制區 --- */
 .dialogue-controls {
     position: absolute;
-    right: 3%;
-    bottom: -20px; /* 配合大按鈕調整位置 */
+    right: 5%;
+    bottom: -12px; /* 配合縮小後的按鈕 */
     display: flex;
-    gap: 20px; /* 增加按鈕間距 */
+    gap: 12px; 
     z-index: 50;
 }
 
 .mecha-wrapper {
     cursor: pointer;
-    width:200px; /* 2 倍寬度 */
+    width: 120px; /* 縮小寬度 (原本 200) */
     transition: transform 0.2s;
 }
 
@@ -256,13 +307,13 @@ body, html {
 .main-fill {
     background-color: var(--btn-dark);
     width: 100%;
-    height: 80px; /* 2 倍高度 */
+    height: 45px; /* 縮小高度 (原本 80) */
     display: flex;
     justify-content: center;
     align-items: center;
     clip-path: polygon(0 0, 80% 0, 100% 30%, 100% 100%, 20% 100%, 0 70%);
     color: white;
-    font-size: 1.5rem; /* 放大按鈕字體 */
+    font-size: 0.9rem; /* 縮小按鈕字體 (原本 1.5) */
     font-weight: bold;
 }
 
