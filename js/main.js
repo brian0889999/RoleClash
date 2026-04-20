@@ -278,7 +278,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const avatarImg = scene.querySelector(".avatar-panel__image");
       if (avatarImg) {
         avatarImg.src = data.avatar;
-        avatarImg.style.width = "100%"; // 縮小深色模板頭像
+        avatarImg.style.width = "95%"; // 縮小深色模板頭像
         avatarImg.style.height = "100%";
         avatarImg.style.margin = "auto";
       }
