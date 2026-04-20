@@ -678,10 +678,10 @@ body, html {
 /* --- 手動留言板按鈕樣式 --- */
 #manual-open-board {
     position: fixed;
-    top: 630px;
+    top: 660px;
     right: 760px;
     width: 300px;
-    height: 180px;
+    height: 400px;
     background: transparent;
     border: none;
     cursor: pointer;
