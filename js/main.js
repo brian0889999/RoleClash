@@ -82,6 +82,28 @@ document.addEventListener("DOMContentLoaded", () => {
   let walkDistance = 0;
   let ticking = false;
   let currentStep = 0;
+  let typingTimer = null;
+
+  // --- 打字機效果函式 ---
+  function typeEffect(element, html, speed = 30) {
+    if (typingTimer) clearTimeout(typingTimer);
+    element.innerHTML = "";
+    let i = 0;
+    function type() {
+      if (i < html.length) {
+        if (html.charAt(i) === "<") {
+          const tagEnd = html.indexOf(">", i);
+          i = tagEnd !== -1 ? tagEnd + 1 : i + 1;
+        } else {
+          i++;
+        }
+        element.innerHTML = html.substring(0, i);
+        typingTimer = setTimeout(type, speed);
+      }
+    }
+    type();
+  }
+
   let isWalkingPhase = 0; 
   let isElephantActive = false;
   let isBirdActive = false;
@@ -255,7 +277,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const nameEl = scene.querySelector(".name-tag");
       const textEl = scene.querySelector(".text-content");
       if (nameEl) nameEl.textContent = data.title;
-      if (textEl) textEl.innerHTML = data.content.includes("<p>") ? data.content : `<p>${data.content}</p>`;
+      if (textEl) {
+        const finalHTML = data.content.includes("<p>") ? data.content : `<p>${data.content}</p>`;
+        typeEffect(textEl, finalHTML);
+      }
 
       // 填入頭像 (白色模板內部補上 img)
       const avatarContainer = scene.querySelector(".avatar-inner");
@@ -274,7 +299,8 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       // 深色模板填充
       scene.querySelector(".dialog-shell__title").textContent = data.title;
-      scene.querySelector(".dialog-shell__text").innerHTML = data.content;
+      const textEl = scene.querySelector(".dialog-shell__text");
+      if (textEl) typeEffect(textEl, data.content);
       const avatarImg = scene.querySelector(".avatar-panel__image");
       if (avatarImg) {
         avatarImg.src = data.avatar;
