@@ -10,16 +10,20 @@
 
     <!-- 開場影片容器 -->
     <div id="video-opening-container">
-        <video id="opening-video" src="assets/final20260417.mp4"></video>
+        <!-- YouTube IFrame API 會將此 div 替換為 iframe -->
+        <div id="opening-video"></div>
+        <div id="video-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; cursor:pointer; z-index:10;"></div>
+        
         <!-- 移除原本的按鈕，改為點擊影片控制 -->
-        <div id="video-controls-container">
+        <div id="video-controls-container" style="z-index:20;">
             <div id="video-progress-bar">
                 <div id="video-progress-fill"></div>
             </div>
             <div id="video-hint">點擊畫面開始/暫停影片</div>
         </div>
-        <button id="skip-video-btn">跳過影片 ➔</button>
+        <button id="skip-video-btn" style="z-index:20;">跳過影片 ➔</button>
     </div>
+    <script src="https://www.youtube.com/iframe_api"></script>
 
     <!-- 全域 Logo -->
     <img id="main-logo" src="assets/sea/image/logo.png" alt="Logo">

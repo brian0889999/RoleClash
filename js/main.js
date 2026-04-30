@@ -18,20 +18,68 @@ document.addEventListener("DOMContentLoaded", () => {
   const finalTextContainer = document.getElementById("final-text-container");
   const lightWallContainer = document.getElementById("light-wall-container");
 
-  // --- 開場影片邏輯 (點擊播放/暫停 + 拖曳控制) ---
+  // --- 開場影片邏輯 (YouTube API) ---
   const videoOpeningContainer = document.getElementById("video-opening-container");
-  const openingVideo = document.getElementById("opening-video");
+  const videoOverlay = document.getElementById("video-overlay");
   const skipVideoBtn = document.getElementById("skip-video-btn");
   const videoProgressBar = document.getElementById("video-progress-bar");
   const videoProgressFill = document.getElementById("video-progress-fill");
 
+  let player;
   let isGameStarted = false;
   let isDraggingVideo = false;
+  let progressInterval;
+
+  // YouTube API 呼叫的初始化函式
+  window.onYouTubeIframeAPIReady = function() {
+    player = new YT.Player('opening-video', {
+      height: '100%',
+      width: '100%',
+      videoId: 'DZEJIthJmTo', // 從 https://youtu.be/DZEJIthJmTo 提取
+      playerVars: {
+        'autoplay': 1,
+        'controls': 0,
+        'disablekb': 1,
+        'rel': 0,
+        'modestbranding': 1,
+        'iv_load_policy': 3,
+        'mute': 1 // 為了自動播放，通常需要靜音
+      },
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': onPlayerStateChange
+      }
+    });
+  };
+
+  function onPlayerReady(event) {
+    // 影片準備好後，開始更新進度條
+    progressInterval = setInterval(updateProgress, 100);
+  }
+
+  function onPlayerStateChange(event) {
+    // 當影片結束 (YT.PlayerState.ENDED = 0)
+    if (event.data === YT.PlayerState.ENDED) {
+      startGame();
+    }
+  }
+
+  function updateProgress() {
+    if (player && player.getDuration) {
+      const duration = player.getDuration();
+      const currentTime = player.getCurrentTime();
+      if (duration > 0) {
+        const pct = (currentTime / duration) * 100;
+        videoProgressFill.style.width = `${pct}%`;
+      }
+    }
+  }
 
   function startGame() {
     if (isGameStarted) return;
     isGameStarted = true;
-    openingVideo.pause();
+    if (player && player.pauseVideo) player.pauseVideo();
+    clearInterval(progressInterval);
     videoOpeningContainer.classList.add("hidden");
     document.querySelector(".background-container").classList.remove("content-hidden");
     character.classList.remove("content-hidden");
@@ -39,26 +87,27 @@ document.addEventListener("DOMContentLoaded", () => {
     updateUI();
   }
 
-  // 點擊影片主體播放或暫停
-  openingVideo.onclick = () => {
-    if (openingVideo.paused) {
-      openingVideo.play().catch(err => console.log("播放受阻:", err));
-    } else {
-      openingVideo.pause();
+  // 點擊覆蓋層來播放或暫停
+  videoOverlay.onclick = () => {
+    if (player) {
+      const state = player.getPlayerState();
+      if (state === YT.PlayerState.PLAYING) {
+        player.pauseVideo();
+      } else {
+        player.playVideo();
+      }
     }
   };
 
   // 進度條控制
-  openingVideo.ontimeupdate = () => {
-    const pct = (openingVideo.currentTime / openingVideo.duration) * 100;
-    videoProgressFill.style.width = `${pct}%`;
-  };
-
   const seekVideo = (e) => {
-    const rect = videoProgressBar.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const pct = Math.max(0, Math.min(1, x / rect.width));
-    openingVideo.currentTime = pct * openingVideo.duration;
+    if (player && player.getDuration) {
+      const rect = videoProgressBar.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const pct = Math.max(0, Math.min(1, x / rect.width));
+      const duration = player.getDuration();
+      player.seekTo(pct * duration, true);
+    }
   };
 
   videoProgressBar.onmousedown = (e) => {
@@ -71,9 +120,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (skipVideoBtn) {
     skipVideoBtn.onclick = () => startGame();
   }
-
-  openingVideo.onended = () => startGame();
-  openingVideo.onerror = () => startGame();
 
   // --- 角色與影格 ---
   const frames = Array.from({ length: 11 }, (_, i) => `assets/walk/image/girl_walk${i + 1}.png`);
