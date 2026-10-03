@@ -128,28 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let walkDistance = 0;
   let ticking = false;
   let currentStep = 0;
-  let typingTimer = null;
-
-  // --- 打字機效果函式 ---
-  function typeEffect(element, html, speed = 30) {
-    if (typingTimer) clearTimeout(typingTimer);
-    element.innerHTML = "";
-    let i = 0;
-    function type() {
-      if (i < html.length) {
-        if (html.charAt(i) === "<") {
-          const tagEnd = html.indexOf(">", i);
-          i = tagEnd !== -1 ? tagEnd + 1 : i + 1;
-        } else {
-          i++;
-        }
-        element.innerHTML = html.substring(0, i);
-        typingTimer = setTimeout(type, speed);
-      }
-    }
-    type();
-  }
-
   let isWalkingPhase = 0; 
   let isElephantActive = false;
   let isBirdActive = false;
@@ -195,45 +173,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- 劇情資料庫 ---
   const storyData = [
-    /* 0 */ { title: "遊戲說明", content: "前面的經歷，女主角深深陷入淺意識中... <br> 請使用滑鼠滾輪移動，陪伴女主角離開...", avatar: "assets/sea/image/avatar_game.png" },
-    /* 1 */ { title: "女主角", content: "痾...這個是...?", avatar: "assets/elephant/image/avatar_girl_sad.png" },
-    /* 2 */ { title: "???", content: "嗚嗚...為什麼要這樣說我...<br> 我明明不是這樣的...", avatar: "assets/elephant/image/avatar_elephant_sad.png" },
-    /* 3 */ { title: "遊戲說明", content: "請用滑鼠點擊對話框，讓對話框消失<br> 讓？？？可以逃離他人的流言蜚語", avatar: "assets/sea/image/avatar_game.png" },
-    /* 4 */ { title: "大象", content: "我是大象。人們總說大象很強壯、能背負很多東西，也許正因為這樣，我以為自己理所當然", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
-    /* 5 */ { title: "大象", content: "要承受這一切。<br> 一開始，那只是一兩句話。", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
-    /* 6 */ { title: "大象", content: "「你怎麼還不會？」、「你應該要更努力一點吧？」、「為什麼別人都做得到？」", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
-    /* 7 */ { title: "大象", content: "我把這些話全收進了心裡。我想要符合大家的期待，我想證明自己可以。但漸漸地，這些聲", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
-    /* 8 */ { title: "大象", content: "音變成了具體的形狀，它們變成了一個個沉重的對話框，堆疊在我的背上。", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
-    /* 9 */ { title: "大象", content: "後來，就算別人沒有開口，我也能「聽見」他在批評我.我開始害怕出門，害怕面對別人", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
-    /* 10 */ { title: "大象", content: "的眼神。我把自己關進一個純黑的空間裡，我以為只要斷絕與外界的接觸，只要躲起來，那", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
-    /* 11 */ { title: "大象", content: "些聲音就會消失。", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
-    /* 12 */ { title: "大象", content: "直到你的出現！<br>原來，我不需要一個人扛下所有的惡意與期待", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
-    /* 13 */ { title: "大象", content: "原來，<br>這世界上還有願意理解我的！", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
-    /* 14 */ { title: "大象", content: "謝謝妳，我想我也該往前走了！再見了！", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
-    /* 15 */ { title: "女主角", content: "這些都不是我們的錯，也不是我們必須背負的。<br>謝謝你，現在我們也可以學會放下了。", avatar: "assets/elephant/image/avatar_girl_fun.png" },
-    /* 16 */ { title: "遊戲說明", content: "道別過大象，路仍然要自己繼續向前...<br>請使用滑鼠滾輪移動，陪伴女主角向前...", avatar: "assets/sea/image/avatar_game.png" },
-    /* 17 */ { title: "女主角", content: "痾...好亮呀...!?", avatar: "assets/bird/image/avatar_girl_sad.png" },
-    /* 18 */ { title: "???", content: "「眼看著就要做完了⋯⋯我一定會搞砸的。<br>如果停下來，他們就會發現我其實很糟⋯⋯」", avatar: "assets/bird/image/avatar_bird_sad.png" },
-    /* 19 */ { title: "遊戲說明", content: "請用滑鼠點擊燈光，讓燈光消失<br> 讓？？？停下來，好好休息！", avatar: "assets/bird/image/avatar_game.png" },
-    /* 20 */ { title: "女主角", content: "妳已經做得很好了。", avatar: "assets/bird/image/avatar_girl_fun.png" },
-    /* 21 */ { title: "蒼鷺", content: "我是蒼鷺。<br>在別人眼中，我永遠是那個穿著體面工作裝、", avatar: "assets/bird/image/avatar_bird_fun.png" },
-    /* 22 */ { title: "蒼鷺", content: "羽毛梳理得一絲不苟、辦事俐落的女強人。<br>「她總是那麼可靠。」他們這麼說。", avatar: "assets/bird/image/avatar_bird_fun.png" },
-    /* 23 */ { title: "蒼鷺", content: "但沒有人知道，我坐在一張多麼刺眼的書桌前，<br>那盞燈亮得讓我睜不開眼，但我不敢關掉它。", avatar: "assets/bird/image/avatar_bird_fun.png" },
-    /* 24 */ { title: "蒼鷺", content: "桌上的紙張像暴風雪一樣亂飛，我拼命地寫、<br>拼命地改、拼命地刪掉重來。", avatar: "assets/bird/image/avatar_bird_fun.png" },
-    /* 25 */ { title: "蒼鷺", content: "「眼看著就要做完了⋯⋯我一定會搞砸的。<br>如果我不夠努力，他們就會」", avatar: "assets/bird/image/avatar_bird_fun.png" },
-    /* 26 */ { title: "蒼鷺", content: "發現我其實很糟。我一定會搞砸的，我根本<br>沒有他們想的那麼厲害。」", avatar: "assets/bird/image/avatar_bird_fun.png" },
-    /* 27 */ { title: "蒼鷺", content: "我像是被困在一個沒有出口的高壓艙裡，只能<br>不停地運轉，連停下來喘一口氣都覺得充滿罪", avatar: "assets/bird/image/avatar_bird_fun.png" },
-    /* 28 */ { title: "蒼鷺", content: "惡感。我好累，我的翅膀僵硬得快要斷掉，但<br>我只能死死盯著那刺眼的光，繼續苛責自己。", avatar: "assets/bird/image/avatar_bird_fun.png" },
-    /* 29 */ { title: "蒼鷺", content: "直到那盞燈關上了...<br>我愣住了，抬起頭看著周圍。沒有人責備我停", avatar: "assets/bird/image/avatar_bird_fun.png" },
-    /* 30 */ { title: "蒼鷺", content: "下筆，沒有人因為燈暗了就離開我。<br>那是一種好安靜、好細緻的陪伴。", avatar: "assets/bird/image/avatar_bird_fun.png" },
-    /* 31 */ { title: "蒼鷺", content: "「原來，我也可以停下來一下。原來，就算我<br>不完美，也有資格好好休息。」", avatar: "assets/bird/image/avatar_bird_fun.png" },
-    /* 32 */ { title: "蒼鷺", content: "謝謝你，<br>我想我不完美，也可以往前走！", avatar: "assets/bird/image/avatar_bird_fun.png" },
-    /* 33 */ { title: "女主角", content: "我們的價值，從來都不需要用燃燒自己來證明。<br>原來，我們也可以停下來一下的，對吧？", avatar: "assets/bird/image/avatar_girl_fun.png" },
-    /* 34 */ { title: "女主角", content: "遇見他們，<br> 就像撿回了散落在黑暗裡的我自己。", avatar: "assets/bird/image/avatar_girl_fun.png" },
-    /* 35 */ { title: "女主角", content: "我們都在這片漆黑的海上漂流，跌跌撞撞地，<br>尋找著那個能讓心靈停泊的彼岸。", avatar: "assets/bird/image/avatar_girl_fun.png" },
-    /* 36 */ { title: "女主角", content: "現在，天亮了。<br>我們一起走吧！", avatar: "assets/bird/image/avatar_girl_fun.png" },
-    /* 37 */ { title: "遊戲說明", content: "現在，請使用滑鼠滾輪移動，<br>陪伴女主角，一起走向光明！", avatar: "assets/sea/image/avatar_game.png" },
-    /* 38 */ { title: "遊戲說明", content: "請用滑鼠點擊留言，<br> 一起分享跟妳一樣迷惘的人吧！", avatar: "assets/sea/image/avatar_game_white.png", theme: "white" }
+    { title: "遊戲說明", content: "前面的經歷，女主角深深陷入淺意識中... <br> 請使用滑鼠滾輪移動，陪伴女主角離開...", avatar: "assets/sea/image/avatar_game.png" },
+    { title: "女主角", content: "痾...這個是...?", avatar: "assets/elephant/image/avatar_girl_sad.png" },
+    { title: "???", content: "嗚嗚...為什麼要這樣說我...<br> 我明明不是這樣的...", avatar: "assets/elephant/image/avatar_elephant_sad.png" },
+    { title: "遊戲說明", content: "請用滑鼠點擊對話框，讓對話框消失<br> 讓？？？可以逃離他人的流言蜚語", avatar: "assets/sea/image/avatar_game.png" },
+    { title: "大象", content: "我是大象。人們總說大象很強壯、能背負很多東西，也許正因為這樣，我以為自己理所當然", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
+    { title: "大象", content: "要承受這一切。<br> 一開始，那只是一兩句話。", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
+    { title: "大象", content: "「你怎麼還不會？」、「你應該要更努力一點吧？」、「為什麼別人都做得到？」", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
+    { title: "大象", content: "我把這些話全收進了心裡。我想要符合大家的期待，我想證明自己可以。但漸漸地，這些聲", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
+    { title: "大象", content: "音變成了具體的形狀，它們變成了一個個沉重的對話框，堆疊在我的背上。", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
+    { title: "大象", content: "後來，就算別人沒有開口，我也能「聽見」他在批評我。我開始害怕出門，害怕面對別人", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
+    { title: "大象", content: "的眼神。我把自己關進一個純黑的空間裡，我以為只要斷絕與外界的接觸，只要躲起來，那", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
+    { title: "大象", content: "些聲音就會消失。", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
+    { title: "大象", content: "直到你的出現！<br>原來，我不需要一個人扛下所有的惡意與期待", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
+    { title: "大象", content: "原來，<br>這世界上還有願意理解我的！", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
+    { title: "大象", content: "謝謝妳，我想我也該往前走了！再見了！", avatar: "assets/elephant/image/avatar_elephant_fun.png" },
+    { title: "女主角", content: "這些都不是我們的錯，也不是我們必須背負的。<br>謝謝你，現在我們也可以學會放下了。", avatar: "assets/elephant/image/avatar_girl_fun.png" },
+    { title: "遊戲說明", content: "道別過大象，路仍然要自己繼續向前...<br>請使用滑鼠滾輪移動，陪伴女主角向前...", avatar: "assets/sea/image/avatar_game.png" },
+    { title: "女主角", content: "痾...好亮呀...!?", avatar: "assets/bird/image/avatar_girl_sad.png" },
+    { title: "???", content: "「眼看著就要做完了⋯⋯我一定會搞砸的。<br>如果停下來，他們就會發現我其實很糟⋯⋯」", avatar: "assets/bird/image/avatar_bird_sad.png" },
+    { title: "遊戲說明", content: "請用滑鼠點擊燈光，讓燈光消失<br> 讓？？？停下來，好好休息！", avatar: "assets/bird/image/avatar_game.png" },
+    { title: "女主角", content: "妳已經做得很好了。", avatar: "assets/bird/image/avatar_girl_fun.png" },
+    { title: "蒼鷺", content: "我是蒼鷺。<br>在別人眼中，我永遠是那個穿著體面工作裝、", avatar: "assets/bird/image/avatar_bird_fun.png" },
+    { title: "蒼鷺", content: "羽毛梳理得一絲不苟、辦事俐落的女強人。<br>「她總是那麼可靠。」他們這麼說。", avatar: "assets/bird/image/avatar_bird_fun.png" },
+    { title: "蒼鷺", content: "但沒有人知道，我坐在一張多麼刺眼的書桌前，<br>那盞燈亮得讓我睜不開眼，但我不敢關掉它。", avatar: "assets/bird/image/avatar_bird_fun.png" },
+    { title: "蒼鷺", content: "桌上的紙張像暴風雪一樣亂飛，我拼命地寫、<br>拼命地改、拼命地刪掉重來。", avatar: "assets/bird/image/avatar_bird_fun.png" },
+    { title: "蒼鷺", content: "「眼看著就要做完了⋯⋯我一定會搞砸的。<br>如果我不夠努力，他們就會」", avatar: "assets/bird/image/avatar_bird_fun.png" },
+    { title: "蒼鷺", content: "發現我其實很糟。我一定會搞砸的，我根本<br>沒有他們想的那麼厲害。」", avatar: "assets/bird/image/avatar_bird_fun.png" },
+    { title: "蒼鷺", content: "我像是被困在一個沒有出口的高壓艙裡，只能<br>不停地運轉，連停下來喘一口氣都覺得充滿罪", avatar: "assets/bird/image/avatar_bird_fun.png" },
+    { title: "蒼鷺", content: "惡感。我好累，我的翅膀僵硬得快要斷掉，但<br>我只能死死盯著那刺眼的光，繼續苛責自己。", avatar: "assets/bird/image/avatar_bird_fun.png" },
+    { title: "蒼鷺", content: "直到那盞燈關上了...<br>我愣住了，抬起頭看著周圍。沒有人責備我停", avatar: "assets/bird/image/avatar_bird_fun.png" },
+    { title: "蒼鷺", content: "下筆，沒有人因為燈暗了就離開我。<br>那是一種好安靜、好細緻的陪伴。", avatar: "assets/bird/image/avatar_bird_fun.png" },
+    { title: "蒼鷺", content: "「原來，我也可以停下來一下。原來，就算我<br>不完美，也有資格好好休息。」", avatar: "assets/bird/image/avatar_bird_fun.png" },
+    { title: "蒼鷺", content: "謝謝你，<br>我想我不完美，也可以往前走！", avatar: "assets/bird/image/avatar_bird_fun.png" },
+    { title: "女主角", content: "我們的價值，從來都不需要用燃燒自己來證明。<br>原來，我們也可以停下來一下的，對吧？", avatar: "assets/bird/image/avatar_girl_fun.png" },
+    { title: "女主角", content: "遇見他們，<br> 就像撿回了散落在黑暗裡的我自己。", avatar: "assets/bird/image/avatar_girl_fun.png" },
+    { title: "女主角", content: "我們都在這片漆黑的海上漂流，跌跌撞撞地，<br>尋找著那個能讓心靈停泊的彼岸。", avatar: "assets/bird/image/avatar_girl_fun.png" },
+    { title: "女主角", content: "現在，天亮了。<br>我們一起走吧！", avatar: "assets/bird/image/avatar_girl_fun.png" },
+    { title: "遊戲說明", content: "現在，請使用滑鼠滾輪移動，<br>陪伴女主角，一起走向光明！", avatar: "assets/sea/image/avatar_game.png" },
+    { title: "遊戲說明", content: "請用滑鼠點擊留言，<br> 一起分享跟妳一樣迷惘的人吧！", avatar: "assets/sea/image/avatar_game_white.png", theme: "white" }
   ];
 
   // --- 初始化與元件載入 ---
@@ -247,11 +225,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const tfDoc = new DOMParser().parseFromString(await tfRes.text(), "text/html");
       const tfWhiteDoc = new DOMParser().parseFromString(await tfWhiteRes.text(), "text/html");
       const btnDoc = new DOMParser().parseFromString(await btnRes.text(), "text/html");
-
       window.tfDarkTemplate = tfDoc.querySelector(".dialog-scene");
-      // 修正白色模板的選擇器，使其能正確載入元件
-      window.tfWhiteTemplate = tfWhiteDoc.querySelector(".mecha-dialogue");
-      
+      window.tfWhiteTemplate = tfWhiteDoc.querySelector(".dialog-scene");
       const buttonTemplate = btnDoc.querySelector(".mecha-wrapper");
 
       window.createControls = () => {
@@ -307,70 +282,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = storyData[currentStep];
     if (!data) return;
     updateBGM();
-    
     dialogueContainer.innerHTML = ""; 
-    const isWhite = data.theme === "white" || currentStep === 38;
-    
-    // 切換主題類名，由 style.css 控制細節顯示
-    dialogueContainer.classList.toggle("is-white-theme", isWhite);
-    
-    const template = isWhite ? window.tfWhiteTemplate : window.tfDarkTemplate;
+    const template = data.theme === "white" ? window.tfWhiteTemplate : window.tfDarkTemplate;
     if (!template) return;
     const scene = template.cloneNode(true);
-    
-    if (isWhite) {
-      // 填入白色模板內容 (支援白色模板專用類名)
-      const nameEl = scene.querySelector(".name-tag");
-      const textEl = scene.querySelector(".text-content");
-      if (nameEl) nameEl.textContent = data.title;
-      if (textEl) {
-        const finalHTML = data.content.includes("<p>") ? data.content : `<p>${data.content}</p>`;
-        typeEffect(textEl, finalHTML);
-      }
-
-      // 填入頭像 (白色模板內部補上 img)
-      const avatarContainer = scene.querySelector(".avatar-inner");
-      if (avatarContainer && !avatarContainer.querySelector("img")) {
-        const img = document.createElement("img");
-        img.className = "avatar-panel__image";
-        img.style.width = "100%"; img.style.height = "100%"; img.style.objectFit = "contain";
-        img.src = data.avatar;
-        avatarContainer.appendChild(img);
-      }
-
-      const controls = window.createControls();
-      const controlParent = scene.querySelector(".panel-wrapper");
-      if (controlParent) controlParent.appendChild(controls);
-      
-    } else {
-      // 深色模板填充
-      scene.querySelector(".dialog-shell__title").textContent = data.title;
-      const textEl = scene.querySelector(".dialog-shell__text");
-      if (textEl) typeEffect(textEl, data.content);
-      const avatarImg = scene.querySelector(".avatar-panel__image");
-      if (avatarImg) {
-        avatarImg.src = data.avatar;
-        avatarImg.style.width = "95%"; // 縮小深色模板頭像
-        avatarImg.style.height = "100%";
-        avatarImg.style.margin = "auto";
-      }
-      const controls = window.createControls();
-      scene.querySelector(".dialog-shell").appendChild(controls);
-    }
-
+    const controls = window.createControls();
+    scene.querySelector(".dialog-shell").appendChild(controls);
     dialogueContainer.appendChild(scene);
-    
-    const prevBtn = dialogueContainer.querySelector(".btn-prev");
-    const nextBtn = dialogueContainer.querySelector(".btn-next");
-    if (prevBtn) prevBtn.onclick = () => { if (currentStep > 0) { currentStep--; updateUI(); } };
-    if (nextBtn) nextBtn.onclick = handleNextAction;
-    
+    scene.querySelector(".dialog-shell__title").textContent = data.title;
+    scene.querySelector(".dialog-shell__text").innerHTML = data.content;
+    scene.querySelector(".avatar-panel__image").src = data.avatar;
+    const prevBtn = scene.querySelector(".btn-prev");
+    const nextBtn = scene.querySelector(".btn-next");
+    prevBtn.onclick = () => { if (currentStep > 0) { currentStep--; updateUI(); } };
+    nextBtn.onclick = handleNextAction;
     const nextOnlySteps = [0, 15, 17, 20, 33, 34, 38];
-    if (prevBtn) prevBtn.classList.toggle("hidden", nextOnlySteps.includes(currentStep));
-    
+    prevBtn.classList.toggle("hidden", nextOnlySteps.includes(currentStep));
     const isInteracting = (currentStep === 3 && canClearBlame) || (currentStep === 19 && canTurnOffLamp);
-    const controlsDiv = dialogueContainer.querySelector(".dialogue-controls");
-    if (controlsDiv) controlsDiv.classList.toggle("hidden", isInteracting);
+    scene.querySelector(".dialogue-controls").classList.toggle("hidden", isInteracting);
   }
 
   function handleNextAction() {
