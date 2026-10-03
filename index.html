@@ -14,12 +14,12 @@
         <div id="opening-video"></div>
         <div id="video-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; cursor:pointer; z-index:10;"></div>
         
-        <!-- 移除原本的按鈕，改為點擊影片控制 -->
+        <button id="video-sound-btn" type="button" disabled aria-pressed="false">開啟聲音</button>
         <div id="video-controls-container" style="z-index:20;">
             <div id="video-progress-bar">
                 <div id="video-progress-fill"></div>
             </div>
-            <div id="video-hint">點擊畫面開始/暫停影片</div>
+            <div id="video-hint">點擊畫面開啟聲音；之後點擊可暫停／播放</div>
         </div>
         <button id="skip-video-btn" style="z-index:20;">跳過影片 ➔</button>
     </div>

@@ -22,10 +22,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const videoOpeningContainer = document.getElementById("video-opening-container");
   const videoOverlay = document.getElementById("video-overlay");
   const skipVideoBtn = document.getElementById("skip-video-btn");
+  const videoSoundBtn = document.getElementById("video-sound-btn");
+  const videoHint = document.getElementById("video-hint");
   const videoProgressBar = document.getElementById("video-progress-bar");
   const videoProgressFill = document.getElementById("video-progress-fill");
 
   let player;
+  let isPlayerReady = false;
   let isGameStarted = false;
   let isDraggingVideo = false;
   let progressInterval;
@@ -53,6 +56,12 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   function onPlayerReady(event) {
+    isPlayerReady = true;
+    videoSoundBtn.disabled = false;
+    if (isGameStarted) {
+      event.target.pauseVideo();
+      return;
+    }
     // 影片準備好後，開始更新進度條
     progressInterval = setInterval(updateProgress, 100);
   }
@@ -87,9 +96,34 @@ document.addEventListener("DOMContentLoaded", () => {
     updateUI();
   }
 
-  // 點擊覆蓋層來播放或暫停
+  function enableVideoSound() {
+    player.unMute();
+    player.setVolume(100);
+    player.playVideo();
+    videoSoundBtn.textContent = "關閉聲音";
+    videoSoundBtn.setAttribute("aria-pressed", "true");
+    videoHint.textContent = "點擊畫面暫停／播放影片";
+  }
+
+  videoSoundBtn.onclick = () => {
+    if (!isPlayerReady || isGameStarted) return;
+    if (player.isMuted()) {
+      enableVideoSound();
+    } else {
+      player.mute();
+      videoSoundBtn.textContent = "開啟聲音";
+      videoSoundBtn.setAttribute("aria-pressed", "false");
+      videoHint.textContent = "點擊畫面開啟聲音；之後點擊可暫停／播放";
+    }
+  };
+
+  // 首次點擊開啟聲音，之後控制播放或暫停。
   videoOverlay.onclick = () => {
-    if (player) {
+    if (isPlayerReady && !isGameStarted) {
+      if (player.isMuted()) {
+        enableVideoSound();
+        return;
+      }
       const state = player.getPlayerState();
       if (state === YT.PlayerState.PLAYING) {
         player.pauseVideo();
