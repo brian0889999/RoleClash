@@ -1,1 +1,13 @@
 assets/*.mp4
+
+# macOS metadata
+.DS_Store
+._*
+
+# Local editor settings and dependencies
+.vscode/
+node_modules/
+
+# Local dialogue prototypes
+/textboxtest.html
+/textboxtest copy.html
